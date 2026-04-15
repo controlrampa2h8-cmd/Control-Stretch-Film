@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Conductor - Stretch Control</title>
+    <style>
+        :root { --bg-dark: #0f172a; --panel-bg: #1e293b; --neon-blue: #00f3ff; --neon-green: #39ff14; --text-light: #f8fafc; --text-muted: #94a3b8; --border: #334155; --border-glow: rgba(0, 243, 255, 0.2); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); }
+        
+        /* Navegación Aislada */
+        nav { background-color: #0b1120; padding: 1.5rem; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid var(--neon-blue); box-shadow: 0 0 20px var(--border-glow); }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 2rem; background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2, h3 { color: var(--white); text-shadow: 0 0 10px rgba(255,255,255,0.2); margin-bottom: 1rem; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-group label { font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
+        .form-group input, .form-group select { background: #0b1120; color: var(--text-light); padding: 0.75rem; border: 1px solid var(--border); border-radius: 4px; font-size: 1rem; outline: none; transition: all 0.3s;}
+        .form-group input:focus, .form-group select:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px var(--border-glow); }
+        .form-group input:read-only { background-color: #1e293b; color: var(--text-muted); cursor: not-allowed; border-color: transparent;}
+        
+        .input-group { display: flex; align-items: stretch; }
+        .input-group .prefix { background: #0b1120; padding: 0.75rem; border: 1px solid var(--border); border-right: none; border-radius: 4px 0 0 4px; font-weight: bold; color: var(--neon-blue); }
+        .input-group input { border-radius: 0 4px 4px 0; flex: 1; }
+        .hidden { display: none !important; }
+        
+        .btn-submit { background: transparent; color: var(--neon-blue); border: 2px solid var(--neon-blue); padding: 0.75rem 1.5rem; border-radius: 4px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; transition: all 0.3s; margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 10px var(--border-glow);}
+        .btn-submit:hover { background-color: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background-color: #0b1120; color: var(--neon-blue); font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+        .table-responsive { overflow-x: auto; margin-top: 1rem; }
+        
+        .badge { padding: 0.35rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+        .badge.pendiente-val { border: 1px solid var(--neon-blue); color: var(--neon-blue); box-shadow: 0 0 8px rgba(0, 243, 255, 0.3); }
+        .badge.liquidado { border: 1px solid var(--neon-green); color: var(--neon-green); box-shadow: 0 0 8px rgba(57, 255, 20, 0.3); }
+        
+        .alerta-push { background-color: rgba(0, 243, 255, 0.1); color: var(--neon-blue); padding: 1rem; border-radius: 8px; border: 1px solid var(--neon-blue); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);}
+        .btn-activar { background-color: transparent; color: var(--neon-blue); border: 1px solid var(--neon-blue); padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; transition: all 0.3s;}
+        .btn-activar:hover { background-color: var(--neon-blue); color: #000; box-shadow: 0 0 10px var(--neon-blue);}
+    </style>
+</head>
+<body>
+    <nav>
+        <h2 style="color: var(--neon-blue); text-shadow: 0 0 15px var(--border-glow); margin: 0; font-size: 1.8rem;">📦 Stretch Control | Portal Conductor</h2>
+    </nav>
+
+    <div class="container">
+        <div id="pushAlerta" class="alerta-push">
+            <span>ℹ️ Active notificaciones para saber cuando se apruebe su solicitud.</span>
+            <button class="btn-activar" onclick="activarNotificaciones()">Activar</button>
+        </div>
+
+        <h2>Ingreso de Datos</h2>
+        <form id="formIngreso">
+            <div class="form-grid">
+                <div class="form-group"><label>Fecha y Hora</label><input type="text" id="fechaHora" readonly></div>
+                <div class="form-group"><label>Placa de la unidad</label><input type="text" id="placa" pattern="[A-Z0-9]{6}" style="text-transform: uppercase;" required autocomplete="off"></div>
+                <div class="form-group"><label>Empresa</label><input type="text" id="empresa" readonly placeholder="Se autocompleta"></div>
+                <div class="form-group">
+                    <label>Tipo de Consumo</label>
+                    <select id="tipoConsumo" required>
+                        <option value="CLIENTE" selected>Consumo Cliente</option>
+                        <option value="INTERNO">Consumo Interno</option>
+                    </select>
+                </div>
+                <div class="form-group" id="grupoGuia">
+                    <label>N° Guía de Remisión</label>
+                    <div class="input-group">
+                        <span class="prefix">T070-</span><input type="text" id="guia" pattern="\d{7}" required autocomplete="off">
+                    </div>
+                </div>
+                <div class="form-group"><label>Cantidad (Rollos)</label><input type="number" id="cantidad" min="1" required></div>
+                <div class="form-group"><label>Teléfono (Perú)</label><input type="tel" id="telefono" pattern="9\d{8}" required autocomplete="off"></div>
+            </div>
+            <button type="submit" class="btn-submit">Registrar Solicitud</button>
+        </form>
+
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+        <h3>Mis Solicitudes Activas</h3>
+        <div class="table-responsive">
+            <table>
+                <thead><tr><th>Fecha/Hora</th><th>Placa</th><th>Tipo Consumo</th><th>Guía</th><th>Cant.</th><th>Estado Actual</th></tr></thead>
+                <tbody id="tablaConductor"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const dbEmpresas = { 'ABC123': 'Transportes Norte', 'XYZ789': 'Logística Integral', 'LMN456': 'Carga Rápida' };
+        let registros = JSON.parse(localStorage.getItem('stretchFilmData')) || [];
+
+        function formatDateTime(date) { return date.toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+        setInterval(() => { const i = document.getElementById('fechaHora'); if(i) i.value = formatDateTime(new Date()); }, 1000);
+
+        function verificarEstadoPermisos() {
+            if (!("Notification" in window)) { document.getElementById('pushAlerta').innerHTML = "Navegador sin soporte Push."; } 
+            else if (Notification.permission === "granted") { document.getElementById('pushAlerta').style.display = 'none'; }
+        }
+        window.activarNotificaciones = function() {
+            Notification.requestPermission().then(p => { if(p === "granted") { document.getElementById('pushAlerta').style.display = 'none'; new Notification("Sistema de Alertas Vinculado"); } });
+        }
+        verificarEstadoPermisos();
+
+        document.getElementById('tipoConsumo').addEventListener('change', (e) => {
+            const grp = document.getElementById('grupoGuia'), inp = document.getElementById('guia');
+            if(e.target.value === 'CLIENTE') { grp.classList.remove('hidden'); inp.required = true; } 
+            else { grp.classList.add('hidden'); inp.required = false; inp.value = ''; }
+        });
+
+        document.getElementById('placa').addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+            document.getElementById('empresa').value = dbEmpresas[e.target.value] || 'Empresa No Registrada';
+        });
+
+        document.getElementById('formIngreso').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const tipo = document.getElementById('tipoConsumo').value;
+            registros.push({
+                id: Date.now(), fechaHoraIngreso: new Date().toISOString(), placa: document.getElementById('placa').value,
+                empresa: document.getElementById('empresa').value, tipoConsumo: tipo,
+                numeroGuia: tipo === 'CLIENTE' ? 'T070-' + document.getElementById('guia').value : 'N/A',
+                cantidadStretch: parseInt(document.getElementById('cantidad').value), telefono: document.getElementById('telefono').value,
+                estado: "PENDIENTE VALIDACION", fechaHoraValidacion: null, fechaHoraLiquidacion: null, cantidadDevuelta: null, 
+                notificacionEnviada: false, notificacionSeguridadEnviada: false, notificacionConductorAprobada: false
+            });
+            localStorage.setItem('stretchFilmData', JSON.stringify(registros)); e.target.reset(); renderTables(); alert("Solicitud registrada.");
+        });
+
+        function renderTables() {
+            const tb = document.getElementById('tablaConductor'); tb.innerHTML = '';
+            [...registros].reverse().forEach(reg => {
+                if(reg.estado !== "LIQUIDADO") {
+                    const estadoMostrar = reg.estado === "PENDIENTE VALIDACION" ? "⏳ PENDIENTE VALIDACIÓN" : "✅ AUTORIZADO A RETIRAR";
+                    tb.innerHTML += `<tr><td style="color:var(--text-muted);">${formatDateTime(new Date(reg.fechaHoraIngreso))}</td><td style="color:var(--white); font-weight:bold;">${reg.placa}</td><td>${reg.tipoConsumo}</td><td style="color:var(--text-muted);">${reg.numeroGuia}</td><td style="color:var(--neon-blue); font-weight:bold; font-size:1.1rem;">${reg.cantidadStretch}</td><td><span class="badge ${reg.estado === "PENDIENTE VALIDACION" ? "pendiente-val" : "liquidado"}">${estadoMostrar}</span></td></tr>`;
+                }
+            });
+        }
+        
+        setInterval(() => {
+            const ahora = new Date(); let actualizar = false;
+            registros.forEach(reg => {
+                if(reg.estado !== "PENDIENTE VALIDACION" && !reg.notificacionConductorAprobada) {
+                    if ("Notification" in window && Notification.permission === "granted") {
+                        new Notification("✅ SOLICITUD APROBADA", { body: `Solicitud de Stretch film para la placa ${reg.placa} fue autorizada.` });
+                    }
+                    reg.notificacionConductorAprobada = true; actualizar = true;
+                }
+                if(reg.estado === "PENDIENTE LIQUIDAR" && !reg.notificacionEnviada && Math.floor((ahora - new Date(reg.fechaHoraValidacion)) / 60000) >= 3) {
+                    if ("Notification" in window && Notification.permission === "granted") {
+                        new Notification("⚠️ LIQUIDACIÓN PENDIENTE", { body: `Placa ${reg.placa} lleva más de 3 min sin liquidar en Rampa.` });
+                    }
+                    reg.notificacionEnviada = true; actualizar = true;
+                }
+            });
+            if(actualizar) { localStorage.setItem('stretchFilmData', JSON.stringify(registros)); renderTables(); }
+        }, 3000);
+
+        window.addEventListener('storage', () => { registros = JSON.parse(localStorage.getItem('stretchFilmData')) || []; renderTables(); });
+        renderTables();
+    </script>
+</body>
+</html>

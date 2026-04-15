@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Stretch Control</title>
+    <title>Panel Maestro - Stretch Control</title>
+    <script>
+        // SEGURIDAD: Solo el Admin puede estar aquí
+        if(sessionStorage.getItem('adminAuth') !== 'true') { window.location.href = 'index.html'; }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -18,128 +22,143 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-light); }
         
-        /* Navegación Mejorada y Más Llamativa */
+        /* Navegación del Super Admin */
         nav { background-color: #0b1120; padding: 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--neon-blue); box-shadow: 0 0 20px var(--border-glow); }
-        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
-        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 1.25rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 0.5rem; transition: all 0.3s; display: inline-block; }
-        .nav-links a:hover { color: var(--neon-blue); text-shadow: 0 0 12px var(--neon-blue); transform: scale(1.05); }
-        .nav-links a.active { color: var(--neon-blue); font-weight: 800; text-shadow: 0 0 15px var(--neon-blue); border-bottom: 3px solid var(--neon-blue); padding-bottom: 0.2rem; }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;}
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; padding: 0.5rem; transition: all 0.3s;}
+        .nav-links a:hover { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+        
+        .btn-logout { background: transparent; color: var(--neon-pink); border: 1px solid var(--neon-pink); padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-left: auto; transition: all 0.3s;}
+        .btn-logout:hover { background: var(--neon-pink); color: #000; box-shadow: 0 0 10px var(--neon-pink); }
 
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
         
+        /* Pestañas Internas del Admin */
+        .admin-tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid #334155; padding-bottom: 1rem;}
+        .admin-tab { background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s; padding: 0.5rem 1rem; border-radius: 4px;}
+        .admin-tab.active { color: var(--neon-blue); background: rgba(0, 243, 255, 0.1); box-shadow: 0 0 10px var(--border-glow); }
+        .admin-tab:hover { color: var(--white); }
+
+        /* Vistas */
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
         .header-controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
-        .header-controls h2 { color: var(--white); text-shadow: 0 0 10px rgba(255,255,255,0.3); }
-        
         .filtros { display: flex; gap: 0.5rem; background: var(--panel-bg); padding: 0.5rem; border-radius: 8px; border: 1px solid #334155; }
         .btn-filtro { background: transparent; border: none; color: var(--text-muted); padding: 0.5rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
-        .btn-filtro:hover { color: var(--white); }
         .btn-filtro.active { background: rgba(0, 243, 255, 0.1); color: var(--neon-blue); box-shadow: 0 0 10px var(--border-glow); border: 1px solid var(--neon-blue); }
 
-        .btn-export { background: transparent; color: var(--neon-green); border: 2px solid var(--neon-green); padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 0.5rem;}
+        .btn-export { background: transparent; color: var(--neon-green); border: 2px solid var(--neon-green); padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s; text-transform: uppercase;}
         .btn-export:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
 
         .dashboard-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .card { padding: 1.5rem; background: var(--panel-bg); border-radius: 12px; border: 1px solid #334155; text-align: center; position: relative; overflow: hidden; transition: transform 0.3s; }
-        .card:hover { transform: translateY(-5px); }
-        
-        .card.card-blue { border-bottom: 3px solid var(--neon-blue); box-shadow: 0 5px 15px rgba(0, 243, 255, 0.1); }
+        .card { padding: 1.5rem; background: var(--panel-bg); border-radius: 12px; border: 1px solid #334155; text-align: center; }
+        .card.card-blue { border-bottom: 3px solid var(--neon-blue); }
         .card.card-blue h3 { color: var(--neon-blue); text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); }
-        
-        .card.card-orange { border-bottom: 3px solid var(--neon-orange); box-shadow: 0 5px 15px rgba(255, 157, 0, 0.1); }
-        .card.card-orange h3 { color: var(--neon-orange); text-shadow: 0 0 10px rgba(255, 157, 0, 0.5); }
-        
-        .card.card-green { border-bottom: 3px solid var(--neon-green); box-shadow: 0 5px 15px rgba(57, 255, 20, 0.1); }
-        .card.card-green h3 { color: var(--neon-green); text-shadow: 0 0 10px rgba(57, 255, 20, 0.5); }
-        
-        .card.card-pink { border-bottom: 3px solid var(--neon-pink); box-shadow: 0 5px 15px rgba(255, 0, 127, 0.1); }
-        .card.card-pink h3 { color: var(--neon-pink); text-shadow: 0 0 10px rgba(255, 0, 127, 0.5); }
-
         .card h3 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .card p { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-
+        
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .chart-box { background: var(--panel-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .chart-box { background: var(--panel-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; }
         .chart-box.full-width { grid-column: 1 / -1; }
         .chart-container { height: 300px; position: relative; width: 100%; }
         
-        .chart-title { color: var(--white); font-size: 1.1rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #334155; }
+        /* Tabla de CRUD */
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; margin-top: 1rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #334155; }
+        th { background-color: #0b1120; color: var(--neon-blue); font-weight: bold; text-transform: uppercase; font-size: 0.85rem;}
+        
+        .btn-sm { padding: 0.4rem 0.8rem; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-right: 0.5rem; transition: 0.3s; }
+        .btn-edit { background: var(--neon-orange); color: #000; }
+        .btn-edit:hover { box-shadow: 0 0 10px var(--neon-orange); }
+        .btn-delete { background: transparent; border: 1px solid var(--neon-pink); color: var(--neon-pink); }
+        .btn-delete:hover { background: var(--neon-pink); color: #000; box-shadow: 0 0 10px var(--neon-pink); }
     </style>
 </head>
 <body>
     <nav>
-        <h2 style="color: var(--neon-blue); text-shadow: 0 0 15px var(--border-glow); margin: 0; font-size: 1.8rem;">📦 Stretch Control</h2>
+        <h2 style="color: var(--neon-blue); text-shadow: 0 0 15px var(--border-glow); margin: 0; font-size: 1.8rem;">📦 Panel Maestro | Administrador</h2>
         <div class="nav-links">
-            <a href="index.html">1. Conductor</a>
-            <a href="seguridad.html">2. Seguridad</a>
-            <a href="rampa.html">3. Rampa</a>
-            <a href="dashboard.html" class="active">Dashboard & Reportes</a>
+            <span style="color: gray;">Accesos Directos:</span>
+            <a href="conductor.html" target="_blank">🔗 Conductor</a>
+            <a href="seguridad.html" target="_blank">🔗 Seguridad</a>
+            <a href="rampa.html" target="_blank">🔗 Rampa</a>
+            <button onclick="logout()" class="btn-logout">Cerrar Sesión</button>
         </div>
     </nav>
 
     <div class="container">
-        <div class="header-controls">
-            <h2>Panel de Análisis Interactivos</h2>
+        
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="switchView('v-dashboard', this)">📊 Gráficos y Reportes</button>
+            <button class="admin-tab" onclick="switchView('v-crud', this)">⚙️ Gestión de Base de Datos</button>
+        </div>
+
+        <div id="v-dashboard" class="view-section active">
+            <div class="header-controls">
+                <div class="filtros">
+                    <button class="btn-filtro active" onclick="cambiarPeriodo('DIARIO', this)">Diario</button>
+                    <button class="btn-filtro" onclick="cambiarPeriodo('SEMANAL', this)">Semanal</button>
+                    <button class="btn-filtro" onclick="cambiarPeriodo('MENSUAL', this)">Mensual</button>
+                    <button class="btn-filtro" onclick="cambiarPeriodo('ANUAL', this)">Anual</button>
+                </div>
+                <button class="btn-export" onclick="exportarExcel()">📊 Exportar a Excel (.XLSX)</button>
+            </div>
+
+            <div class="dashboard-cards">
+                <div class="card card-blue"><h3 id="statTotal">0</h3><p>Registros Totales</p></div>
+                <div class="card card-blue"><h3 id="statPendientes" style="color:var(--neon-orange);">0</h3><p>Pendientes</p></div>
+                <div class="card card-blue"><h3 id="statLiquidados" style="color:var(--neon-green);">0</h3><p>Liquidados</p></div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-box">
+                    <h3 style="color: var(--white); margin-bottom: 1rem;">Consumo Neto por Empresa</h3>
+                    <div class="chart-container"><canvas id="chartEmpresa"></canvas></div>
+                </div>
+                <div class="chart-box">
+                    <h3 style="color: var(--white); margin-bottom: 1rem;">Estado Actual</h3>
+                    <div class="chart-container"><canvas id="chartEstados"></canvas></div>
+                </div>
+                <div class="chart-box full-width">
+                    <h3 style="color: var(--white); margin-bottom: 1rem;">Tendencia de Solicitudes</h3>
+                    <div class="chart-container"><canvas id="chartTendencia"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="v-crud" class="view-section">
+            <h2 style="color: var(--neon-blue); margin-bottom: 1rem;">Base de Datos Completa</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Precaución: Las eliminaciones y ediciones aquí afectan a todo el sistema en tiempo real.</p>
             
-            <div class="filtros">
-                <button class="btn-filtro active" onclick="cambiarPeriodo('DIARIO', this)">Diario</button>
-                <button class="btn-filtro" onclick="cambiarPeriodo('SEMANAL', this)">Semanal</button>
-                <button class="btn-filtro" onclick="cambiarPeriodo('MENSUAL', this)">Mensual</button>
-                <button class="btn-filtro" onclick="cambiarPeriodo('ANUAL', this)">Anual</button>
-            </div>
-
-            <button class="btn-export" onclick="exportarExcel()">
-                📊 Exportar a Excel (.XLSX)
-            </button>
-        </div>
-
-        <div class="dashboard-cards">
-            <div class="card card-blue">
-                <h3 id="statTotal">0</h3>
-                <p>Registros Totales</p>
-            </div>
-            <div class="card card-orange">
-                <h3 id="statPendientes">0</h3>
-                <p>Pendientes de Liquidar</p>
-            </div>
-            <div class="card card-green">
-                <h3 id="statLiquidados">0</h3>
-                <p>Liquidados</p>
-            </div>
-            <div class="card card-pink">
-                <h3 id="statVencidos">0</h3>
-                <p>Vencidos (> 3 min)</p>
+            <div style="overflow-x: auto; background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border);">
+                <table>
+                    <thead><tr><th>ID</th><th>Fecha</th><th>Placa</th><th>Empresa</th><th>Cant.</th><th>Estado</th><th>Acciones de Admin</th></tr></thead>
+                    <tbody id="tablaAdminCrud"></tbody>
+                </table>
             </div>
         </div>
 
-        <div class="charts-grid">
-            <div class="chart-box">
-                <h3 class="chart-title">Consumo Neto por Empresa (Rollos)</h3>
-                <div class="chart-container"><canvas id="chartEmpresa"></canvas></div>
-            </div>
-            <div class="chart-box">
-                <h3 class="chart-title">Estado Actual de Solicitudes</h3>
-                <div class="chart-container" style="display: flex; justify-content: center;"><canvas id="chartEstados"></canvas></div>
-            </div>
-            <div class="chart-box full-width">
-                <h3 class="chart-title" id="tituloTendencia">Tendencia de Solicitudes</h3>
-                <div class="chart-container"><canvas id="chartTendencia"></canvas></div>
-            </div>
-        </div>
     </div>
 
     <script>
+        function logout() { sessionStorage.removeItem('adminAuth'); window.location.href = 'index.html'; }
+
+        function switchView(id, btn) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+            if(id === 'v-crud') renderizarCRUD();
+        }
+
         let registrosGlobales = JSON.parse(localStorage.getItem('stretchFilmData')) || [];
         let periodoActual = 'DIARIO';
         let datosFiltrados = [];
-
         let chartEmpresaInst, chartEstadosInst, chartTendenciaInst;
+        Chart.defaults.color = '#94a3b8'; Chart.defaults.borderColor = '#334155';
 
-        const colorNeons = ['rgba(0, 243, 255, 0.8)', 'rgba(255, 0, 127, 0.8)', 'rgba(57, 255, 20, 0.8)', 'rgba(255, 157, 0, 0.8)', 'rgba(189, 0, 255, 0.8)'];
-        const colorBorders = ['#00f3ff', '#ff007f', '#39ff14', '#ff9d00', '#bd00ff'];
-
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.borderColor = '#334155';
-
+        // --- LOGICA DEL DASHBOARD ---
         function cambiarPeriodo(periodo, btnElement) {
             periodoActual = periodo;
             document.querySelectorAll('.btn-filtro').forEach(btn => btn.classList.remove('active'));
@@ -154,88 +173,90 @@
                 else if(periodo === 'ANUAL') return fechaReg.getFullYear() === hoy.getFullYear();
                 return true;
             });
-
-            actualizarTarjetas();
-            renderizarGraficos();
+            actualizarTarjetas(); renderizarGraficos();
         }
 
         function actualizarTarjetas() {
             document.getElementById('statTotal').innerText = datosFiltrados.length;
-            document.getElementById('statPendientes').innerText = datosFiltrados.filter(r => r.estado === "PENDIENTE LIQUIDAR" || r.estado === "PENDIENTE VALIDACION").length;
+            document.getElementById('statPendientes').innerText = datosFiltrados.filter(r => r.estado !== "LIQUIDADO").length;
             document.getElementById('statLiquidados').innerText = datosFiltrados.filter(r => r.estado === "LIQUIDADO").length;
-            document.getElementById('statVencidos').innerText = datosFiltrados.filter(r => r.estado === "PENDIENTE LIQUIDAR" && Math.floor((new Date() - new Date(r.fechaHoraValidacion)) / 60000) >= 3).length;
         }
 
         function renderizarGraficos() {
             const consumoEmpresa = {};
-            datosFiltrados.filter(r => r.estado === "LIQUIDADO").forEach(r => {
-                const neto = r.cantidadStretch - (r.cantidadDevuelta || 0);
-                consumoEmpresa[r.empresa] = (consumoEmpresa[r.empresa] || 0) + neto;
-            });
+            datosFiltrados.filter(r => r.estado === "LIQUIDADO").forEach(r => { consumoEmpresa[r.empresa] = (consumoEmpresa[r.empresa] || 0) + (r.cantidadStretch - (r.cantidadDevuelta || 0)); });
 
             if(chartEmpresaInst) chartEmpresaInst.destroy();
-            chartEmpresaInst = new Chart(document.getElementById('chartEmpresa'), {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(consumoEmpresa).length ? Object.keys(consumoEmpresa) : ['Sin datos'],
-                    datasets: [{ label: 'Rollos Consumidos', data: Object.keys(consumoEmpresa).length ? Object.values(consumoEmpresa) : [0], backgroundColor: colorNeons, borderColor: colorBorders, borderWidth: 2, borderRadius: 6 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
+            chartEmpresaInst = new Chart(document.getElementById('chartEmpresa'), { type: 'bar', data: { labels: Object.keys(consumoEmpresa).length ? Object.keys(consumoEmpresa) : ['Sin datos'], datasets: [{ label: 'Rollos Consumidos', data: Object.keys(consumoEmpresa).length ? Object.values(consumoEmpresa) : [0], backgroundColor: 'rgba(0, 243, 255, 0.8)', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
 
-            let stPend = 0, stLiq = 0, stVen = 0;
-            datosFiltrados.forEach(r => {
-                if(r.estado === "LIQUIDADO") stLiq++;
-                else if(r.estado === "PENDIENTE LIQUIDAR" && Math.floor((new Date() - new Date(r.fechaHoraValidacion)) / 60000) >= 3) stVen++;
-                else stPend++;
-            });
-
+            let stPend = 0, stLiq = 0;
+            datosFiltrados.forEach(r => { if(r.estado === "LIQUIDADO") stLiq++; else stPend++; });
             if(chartEstadosInst) chartEstadosInst.destroy();
-            chartEstadosInst = new Chart(document.getElementById('chartEstados'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Pendientes', 'Liquidados', 'Vencidos'],
-                    datasets: [{
-                        data: (stPend===0 && stLiq===0 && stVen===0) ? [1] : [stPend, stLiq, stVen],
-                        backgroundColor: (stPend===0 && stLiq===0 && stVen===0) ? ['#334155'] : ['rgba(255, 157, 0, 0.8)', 'rgba(57, 255, 20, 0.8)', 'rgba(255, 0, 127, 0.8)'],
-                        borderColor: '#1e293b', borderWidth: 3, hoverOffset: 10
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
-            });
+            chartEstadosInst = new Chart(document.getElementById('chartEstados'), { type: 'doughnut', data: { labels: ['Pendientes', 'Liquidados'], datasets: [{ data: [stPend, stLiq], backgroundColor: ['rgba(255, 157, 0, 0.8)', 'rgba(57, 255, 20, 0.8)'], borderColor: '#1e293b', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false } });
 
             const agrupacion = {};
             datosFiltrados.forEach(r => {
-                const d = new Date(r.fechaHoraIngreso);
-                let clave = periodoActual === 'DIARIO' ? `${d.getHours()}:00` : d.toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
+                let clave = periodoActual === 'DIARIO' ? `${new Date(r.fechaHoraIngreso).getHours()}:00` : new Date(r.fechaHoraIngreso).toLocaleDateString('es-PE', {day:'2-digit', month:'short'});
                 agrupacion[clave] = (agrupacion[clave] || 0) + 1;
             });
-
-            document.getElementById('tituloTendencia').innerText = periodoActual === 'DIARIO' ? 'Tendencia de Solicitudes (Por Hora)' : 'Tendencia de Solicitudes (Por Día)';
-
             if(chartTendenciaInst) chartTendenciaInst.destroy();
-            chartTendenciaInst = new Chart(document.getElementById('chartTendencia'), {
-                type: 'line',
-                data: {
-                    labels: Object.keys(agrupacion).length ? Object.keys(agrupacion).sort() : ['Sin datos'],
-                    datasets: [{ label: 'Cant. de Solicitudes', data: Object.keys(agrupacion).length ? Object.keys(agrupacion).sort().map(k => agrupacion[k]) : [0], borderColor: '#00f3ff', backgroundColor: 'rgba(0, 243, 255, 0.1)', borderWidth: 3, fill: true, tension: 0.4, pointBackgroundColor: '#00f3ff', pointRadius: 4, pointHoverRadius: 8 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            chartTendenciaInst = new Chart(document.getElementById('chartTendencia'), { type: 'line', data: { labels: Object.keys(agrupacion).sort(), datasets: [{ label: 'Solicitudes', data: Object.keys(agrupacion).sort().map(k => agrupacion[k]), borderColor: '#00f3ff', backgroundColor: 'rgba(0, 243, 255, 0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false } });
+        }
+
+        // --- LÓGICA DEL CRUD (GESTOR ADMIN) ---
+        function renderizarCRUD() {
+            const tb = document.getElementById('tablaAdminCrud'); tb.innerHTML = '';
+            [...registrosGlobales].reverse().forEach(reg => {
+                tb.innerHTML += `<tr>
+                    <td style="color:var(--text-muted); font-size:0.8rem;">${reg.id}</td>
+                    <td>${new Date(reg.fechaHoraIngreso).toLocaleString('es-PE')}</td>
+                    <td style="color:var(--white); font-weight:bold;">${reg.placa}</td>
+                    <td>${reg.empresa}</td>
+                    <td style="color:var(--neon-blue); font-weight:bold;">${reg.cantidadStretch}</td>
+                    <td>${reg.estado}</td>
+                    <td>
+                        <button class="btn-sm btn-edit" onclick="editarReg(${reg.id})">✏️ Editar</button>
+                        <button class="btn-sm btn-delete" onclick="eliminarReg(${reg.id})">🗑️ Borrar</button>
+                    </td>
+                </tr>`;
             });
+        }
+
+        window.eliminarReg = function(id) {
+            if(confirm("⚠️ ¿Estás seguro de eliminar este registro PERMANENTEMENTE?")) {
+                registrosGlobales = registrosGlobales.filter(r => r.id !== id);
+                localStorage.setItem('stretchFilmData', JSON.stringify(registrosGlobales));
+                renderizarCRUD(); cambiarPeriodo(periodoActual, document.querySelector('.btn-filtro.active'));
+            }
+        }
+
+        window.editarReg = function(id) {
+            let index = registrosGlobales.findIndex(r => r.id === id);
+            if(index > -1) {
+                let r = registrosGlobales[index];
+                let nuevaCant = prompt(`Editando placa ${r.placa}\nNueva cantidad de stretch film:`, r.cantidadStretch);
+                if(nuevaCant !== null && !isNaN(nuevaCant)) {
+                    let nuevoEstado = prompt(`Estado actual: ${r.estado}\nEscribe el nuevo estado (1 = PENDIENTE VALIDACION, 2 = PENDIENTE LIQUIDAR, 3 = LIQUIDADO):`, "Escribe 1, 2 o 3");
+                    
+                    registrosGlobales[index].cantidadStretch = parseInt(nuevaCant);
+                    if(nuevoEstado === "1") registrosGlobales[index].estado = "PENDIENTE VALIDACION";
+                    if(nuevoEstado === "2") registrosGlobales[index].estado = "PENDIENTE LIQUIDAR";
+                    if(nuevoEstado === "3") registrosGlobales[index].estado = "LIQUIDADO";
+                    
+                    localStorage.setItem('stretchFilmData', JSON.stringify(registrosGlobales));
+                    renderizarCRUD(); cambiarPeriodo(periodoActual, document.querySelector('.btn-filtro.active'));
+                }
+            }
         }
 
         window.exportarExcel = function() {
-            if(datosFiltrados.length === 0) { alert("No hay datos en el periodo seleccionado."); return; }
-            const datosExcel = datosFiltrados.map(r => ({
-                "ID Registro": r.id, "Fecha/Hora Ingreso": new Date(r.fechaHoraIngreso).toLocaleString('es-PE'), "Placa": r.placa, "Empresa": r.empresa, "Tipo de Consumo": r.tipoConsumo, "N° Guía": r.numeroGuia, "Cant. Solicitada": r.cantidadStretch, "Teléfono": r.telefono, "Estado Final": r.estado, "Fecha/Hora Autorización": r.fechaHoraValidacion ? new Date(r.fechaHoraValidacion).toLocaleString('es-PE') : 'N/A', "Fecha/Hora Liquidación": r.fechaHoraLiquidacion ? new Date(r.fechaHoraLiquidacion).toLocaleString('es-PE') : 'N/A', "Cant. Devuelta": r.cantidadDevuelta !== null ? r.cantidadDevuelta : 0, "Consumo Neto Real": r.estado === "LIQUIDADO" ? (r.cantidadStretch - (r.cantidadDevuelta || 0)) : 0
-            }));
-            const workbook = XLSX.utils.book_new(); const worksheet = XLSX.utils.json_to_sheet(datosExcel);
-            worksheet['!cols'] = [{wch: 15}, {wch: 20}, {wch: 10}, {wch: 25}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 12}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 18}];
-            XLSX.utils.book_append_sheet(workbook, worksheet, `Reporte_${periodoActual}`);
-            XLSX.writeFile(workbook, `StretchControl_Reporte_${periodoActual}_${new Date().toISOString().split('T')[0]}.xlsx`);
+            if(datosFiltrados.length === 0) return alert("No hay datos.");
+            const datosExcel = datosFiltrados.map(r => ({ "ID": r.id, "Fecha": new Date(r.fechaHoraIngreso).toLocaleString('es-PE'), "Placa": r.placa, "Empresa": r.empresa, "Tipo": r.tipoConsumo, "Guía": r.numeroGuia, "Cant": r.cantidadStretch, "Tel": r.telefono, "Estado": r.estado }));
+            const wb = XLSX.utils.book_new(); const ws = XLSX.utils.json_to_sheet(datosExcel);
+            XLSX.utils.book_append_sheet(wb, ws, `Data`); XLSX.writeFile(wb, `Admin_Reporte_${new Date().getTime()}.xlsx`);
         }
 
-        window.addEventListener('storage', () => { registrosGlobales = JSON.parse(localStorage.getItem('stretchFilmData')) || []; cambiarPeriodo(periodoActual, document.querySelector('.btn-filtro.active')); });
+        window.addEventListener('storage', () => { registrosGlobales = JSON.parse(localStorage.getItem('stretchFilmData')) || []; cambiarPeriodo(periodoActual, document.querySelector('.btn-filtro.active')); if(document.getElementById('v-crud').classList.contains('active')) renderizarCRUD(); });
         cambiarPeriodo('DIARIO', document.querySelector('.btn-filtro'));
     </script>
 </body>

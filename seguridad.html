@@ -5,21 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seguridad - Stretch Control</title>
     <style>
-        :root {
-            --bg-dark: #0f172a; --panel-bg: #1e293b; --neon-blue: #00f3ff; --neon-pink: #ff007f; 
-            --neon-green: #39ff14; --neon-orange: #ff9d00; --text-light: #f8fafc; --text-muted: #94a3b8; 
-            --border: #334155; --border-glow: rgba(0, 243, 255, 0.2);
-        }
+        :root { --bg-dark: #0f172a; --panel-bg: #1e293b; --neon-blue: #00f3ff; --neon-pink: #ff007f; --neon-green: #39ff14; --text-light: #f8fafc; --text-muted: #94a3b8; --border: #334155; --border-glow: rgba(0, 243, 255, 0.2); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-light); }
         
-        /* Navegación Mejorada y Más Llamativa */
-        nav { background-color: #0b1120; padding: 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--neon-blue); box-shadow: 0 0 20px var(--border-glow); }
-        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
-        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 1.25rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 0.5rem; transition: all 0.3s; display: inline-block; }
-        .nav-links a:hover { color: var(--neon-blue); text-shadow: 0 0 12px var(--neon-blue); transform: scale(1.05); }
-        .nav-links a.active { color: var(--neon-blue); font-weight: 800; text-shadow: 0 0 15px var(--neon-blue); border-bottom: 3px solid var(--neon-blue); padding-bottom: 0.2rem; }
-
+        /* Navegación Aislada */
+        nav { background-color: #0b1120; padding: 1.5rem; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid var(--neon-blue); box-shadow: 0 0 20px var(--border-glow); }
+        
         .container { max-width: 1200px; margin: 2rem auto; padding: 2rem 1rem; background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         h2 { color: var(--white); text-shadow: 0 0 10px rgba(255,255,255,0.2); }
         
@@ -46,13 +38,7 @@
 </head>
 <body>
     <nav>
-        <h2 style="color: var(--neon-blue); text-shadow: 0 0 15px var(--border-glow); margin: 0; font-size: 1.8rem;">📦 Stretch Control</h2>
-        <div class="nav-links">
-            <a href="index.html">1. Conductor</a>
-            <a href="seguridad.html" class="active">2. Seguridad</a>
-            <a href="rampa.html">3. Rampa</a>
-            <a href="dashboard.html">Dashboard & Reportes</a>
-        </div>
+        <h2 style="color: var(--neon-blue); text-shadow: 0 0 15px var(--border-glow); margin: 0; font-size: 1.8rem;">📦 Stretch Control | Estación de Seguridad</h2>
     </nav>
 
     <div class="container">
