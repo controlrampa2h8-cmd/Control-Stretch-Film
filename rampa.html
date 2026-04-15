@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rampa - Stretch Control</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --panel-bg: #1e293b; --neon-blue: #00f3ff; --neon-pink: #ff007f; 
+            --neon-green: #39ff14; --neon-orange: #ff9d00; --text-light: #f8fafc; --text-muted: #94a3b8; 
+            --border: #334155; --border-glow: rgba(0, 243, 255, 0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); }
+        
+        /* Navegación Mejorada y Más Llamativa */
+        nav { background-color: #0b1120; padding: 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--neon-blue); box-shadow: 0 0 20px var(--border-glow); }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 1.25rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 0.5rem; transition: all 0.3s; display: inline-block; }
+        .nav-links a:hover { color: var(--neon-blue); text-shadow: 0 0 12px var(--neon-blue); transform: scale(1.05); }
+        .nav-links a.active { color: var(--neon-blue); font-weight: 800; text-shadow: 0 0 15px var(--neon-blue); border-bottom: 3px solid var(--neon-blue); padding-bottom: 0.2rem; }
+
+        .container { max-width: 1200px; margin: 2rem auto; padding: 2rem 1rem; background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2, h3 { color: var(--white); text-shadow: 0 0 10px rgba(255,255,255,0.2); margin-bottom: 1rem; }
+
+        .filtros { display: flex; gap: 0.5rem; background: #0b1120; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .btn-filtro { background: transparent; border: none; color: var(--text-muted); padding: 0.5rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+        .btn-filtro:hover { color: var(--text-light); }
+        .btn-filtro.active { background: rgba(0, 243, 255, 0.1); color: var(--neon-blue); box-shadow: 0 0 10px var(--border-glow); border: 1px solid var(--neon-blue); }
+
+        table { width: 100%; border-collapse: collapse; min-width: 800px; margin-top: 1rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background-color: #0b1120; color: var(--neon-blue); font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+        .table-responsive { overflow-x: auto; }
+        
+        .badge { padding: 0.35rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+        .badge.pendiente-liq { border: 1px solid var(--neon-orange); color: var(--neon-orange); box-shadow: 0 0 8px rgba(255, 157, 0, 0.3); }
+        .badge.liquidado { border: 1px solid var(--neon-green); color: var(--neon-green); box-shadow: 0 0 8px rgba(57, 255, 20, 0.3); }
+        .badge.vencido { border: 1px solid var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 8px rgba(255, 0, 127, 0.3); }
+        
+        .btn-action { padding: 0.5rem 1rem; border: none; border-radius: 4px; color: #000; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: all 0.3s; }
+        .btn-liq { background-color: var(--neon-orange); box-shadow: 0 0 10px rgba(255, 157, 0, 0.4); }
+        .btn-liq:hover { background-color: #ffb133; box-shadow: 0 0 15px var(--neon-orange); }
+
+        .log-container { max-height: 200px; overflow-y: auto; background: #000; color: var(--neon-green); padding: 1rem; font-family: 'Courier New', Courier, monospace; border-radius: 4px; border: 1px solid var(--neon-green); box-shadow: inset 0 0 10px rgba(57, 255, 20, 0.2); }
+        .log-entry { margin-bottom: 0.5rem; border-bottom: 1px dashed rgba(57, 255, 20, 0.3); padding-bottom: 0.25rem; }
+    </style>
+</head>
+<body>
+    <nav>
+        <h2 style="color: var(--neon-blue); text-shadow: 0 0 15px var(--border-glow); margin: 0; font-size: 1.8rem;">📦 Stretch Control</h2>
+        <div class="nav-links">
+            <a href="index.html">1. Conductor</a>
+            <a href="seguridad.html">2. Seguridad</a>
+            <a href="rampa.html" class="active">3. Rampa</a>
+            <a href="dashboard.html">Dashboard & Reportes</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Control de Rampa - Liquidaciones</h2>
+        
+        <div class="filtros">
+            <button class="btn-filtro active" id="btnRampaPendientes" onclick="cambiarFiltroRampa('PENDIENTES')">⏳ Pendientes de Liquidar</button>
+            <button class="btn-filtro" id="btnRampaLiquidados" onclick="cambiarFiltroRampa('LIQUIDADOS')">✅ Registros Liquidados</button>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead><tr><th>Fecha Autorización</th><th>Placa</th><th>Empresa</th><th>Cant. Entregada</th><th>Estado</th><th>Tiempo Transcurrido</th><th>Acción</th></tr></thead>
+                <tbody id="tablaRampa"></tbody>
+            </table>
+        </div>
+        
+        <h3 style="margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">Terminal de Alertas (> 3 min)</h3>
+        <div class="log-container" id="logNotificaciones"></div>
+    </div>
+
+    <script>
+        let registros = JSON.parse(localStorage.getItem('stretchFilmData')) || [];
+        let filtroActualRampa = 'PENDIENTES';
+
+        function formatDateTime(date) { return date.toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+
+        window.cambiarFiltroRampa = function(filtro) {
+            filtroActualRampa = filtro;
+            document.getElementById('btnRampaPendientes').classList.toggle('active', filtro === 'PENDIENTES');
+            document.getElementById('btnRampaLiquidados').classList.toggle('active', filtro === 'LIQUIDADOS');
+            renderTables();
+        }
+
+        function renderTables() {
+            const tb = document.getElementById('tablaRampa'); tb.innerHTML = '';
+            [...registros].reverse().forEach(reg => {
+                const min = Math.floor((new Date() - new Date(reg.fechaHoraValidacion)) / 60000);
+                const isVencido = reg.estado === "PENDIENTE LIQUIDAR" && min >= 3;
+                const display = reg.estado === "LIQUIDADO" ? formatDateTime(new Date(reg.fechaHoraLiquidacion)) : `${min} min`;
+                
+                let htmlFila = `<tr><td>${formatDateTime(new Date(reg.fechaHoraValidacion))}</td><td style="color:var(--text-light); font-weight:bold;">${reg.placa}</td><td style="color:var(--text-muted);">${reg.empresa}</td><td style="color:var(--neon-blue); font-weight:bold; font-size:1.1rem;">${reg.cantidadStretch}</td><td><span class="badge ${reg.estado === "LIQUIDADO" ? 'liquidado' : (isVencido ? 'vencido' : 'pendiente-liq')}">${isVencido ? 'VENCIDO' : reg.estado}</span></td><td style="color:var(--text-muted);">${display}</td><td>${reg.estado === "PENDIENTE LIQUIDAR" ? `<button class="btn-action btn-liq" onclick="liquidar(${reg.id})">🎯 LIQUIDAR</button>` : `<span style="color:var(--neon-green); font-weight:bold;">Devueltos: ${reg.cantidadDevuelta}</span>`}</td></tr>`;
+
+                if (filtroActualRampa === 'PENDIENTES' && reg.estado === "PENDIENTE LIQUIDAR") {
+                    tb.innerHTML += htmlFila;
+                } else if (filtroActualRampa === 'LIQUIDADOS' && reg.estado === "LIQUIDADO") {
+                    tb.innerHTML += htmlFila;
+                }
+            });
+        }
+
+        window.liquidar = function(id) {
+            let reg = registros.find(r => r.id === id);
+            if(reg) {
+                let dev = prompt(`Retiró ${reg.cantidadStretch} rollos. ¿Cuántos devuelve?`, "0");
+                if(dev !== null && !isNaN(dev)) { reg.estado = "LIQUIDADO"; reg.fechaHoraLiquidacion = new Date().toISOString(); reg.cantidadDevuelta = parseInt(dev); localStorage.setItem('stretchFilmData', JSON.stringify(registros)); renderTables(); }
+            }
+        }
+
+        setInterval(() => {
+            const ahora = new Date(); let actualizar = false;
+            registros.forEach(reg => {
+                if(reg.estado === "PENDIENTE LIQUIDAR" && !reg.notificacionEnviada && Math.floor((ahora - new Date(reg.fechaHoraValidacion)) / 60000) >= 3) {
+                    document.getElementById('logNotificaciones').innerHTML = `<div class="log-entry">[${formatDateTime(ahora)}] > EXEC: Alerta Push enviada a Conductor [PLACA: <span style="color:var(--white);">${reg.placa}</span>] - T/Out: 3 min.</div>` + document.getElementById('logNotificaciones').innerHTML;
+                    if ("Notification" in window && Notification.permission === "granted") {
+                        new Notification("⚠️ LIQUIDACIÓN PENDIENTE", { body: `Placa ${reg.placa} lleva más de 3 min sin liquidar.` });
+                    }
+                    reg.notificacionEnviada = true; localStorage.setItem('stretchFilmData', JSON.stringify(registros)); actualizar = true;
+                }
+            });
+            if(actualizar) renderTables();
+            renderTables();
+        }, 10000);
+
+        window.addEventListener('storage', () => { registros = JSON.parse(localStorage.getItem('stretchFilmData')) || []; renderTables(); });
+        renderTables();
+    </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguridad - Stretch Control</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --panel-bg: #1e293b; --neon-blue: #00f3ff; --neon-pink: #ff007f; 
+            --neon-green: #39ff14; --neon-orange: #ff9d00; --text-light: #f8fafc; --text-muted: #94a3b8; 
+            --border: #334155; --border-glow: rgba(0, 243, 255, 0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-light); }
+        
+        /* Navegación Mejorada y Más Llamativa */
+        nav { background-color: #0b1120; padding: 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--neon-blue); box-shadow: 0 0 20px var(--border-glow); }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-muted); font-size: 1.25rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 0.5rem; transition: all 0.3s; display: inline-block; }
+        .nav-links a:hover { color: var(--neon-blue); text-shadow: 0 0 12px var(--neon-blue); transform: scale(1.05); }
+        .nav-links a.active { color: var(--neon-blue); font-weight: 800; text-shadow: 0 0 15px var(--neon-blue); border-bottom: 3px solid var(--neon-blue); padding-bottom: 0.2rem; }
+
+        .container { max-width: 1200px; margin: 2rem auto; padding: 2rem 1rem; background: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { color: var(--white); text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        
+        .filtros { display: flex; gap: 0.5rem; background: #0b1120; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border); margin-top: 1.5rem; margin-bottom: 1.5rem;}
+        .tab-btn { background: transparent; border: none; font-size: 1rem; font-weight: bold; color: var(--text-muted); cursor: pointer; padding: 0.5rem 1rem; border-radius: 4px; transition: all 0.3s;}
+        .tab-btn:hover { color: var(--text-light); }
+        .tab-btn.active { background: rgba(0, 243, 255, 0.1); color: var(--neon-blue); box-shadow: 0 0 10px var(--border-glow); border: 1px solid var(--neon-blue); }
+
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background-color: #0b1120; color: var(--neon-blue); font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+        .table-responsive { overflow-x: auto; }
+        
+        .badge { padding: 0.35rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--neon-blue); color: var(--neon-blue); box-shadow: 0 0 8px rgba(0, 243, 255, 0.3); }
+        .badge.aprobado { border: 1px solid var(--neon-green); color: var(--neon-green); box-shadow: 0 0 8px rgba(57, 255, 20, 0.3); }
+        
+        .btn-action { padding: 0.5rem 1rem; border: none; border-radius: 4px; color: #000; cursor: pointer; font-weight: bold; background-color: var(--neon-blue); text-transform: uppercase; box-shadow: 0 0 10px rgba(0, 243, 255, 0.4); transition: all 0.3s;}
+        .btn-action:hover { background-color: #fff; box-shadow: 0 0 15px var(--neon-blue); }
+        
+        .alerta-push { background-color: rgba(255, 0, 127, 0.1); color: var(--neon-pink); padding: 1rem; border-radius: 8px; border: 1px solid var(--neon-pink); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 15px rgba(255, 0, 127, 0.2);}
+        .btn-activar { background-color: transparent; color: var(--neon-pink); border: 1px solid var(--neon-pink); padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; transition: all 0.3s;}
+        .btn-activar:hover { background-color: var(--neon-pink); color: #000; box-shadow: 0 0 10px var(--neon-pink);}
+    </style>
+</head>
+<body>
+    <nav>
+        <h2 style="color: var(--neon-blue); text-shadow: 0 0 15px var(--border-glow); margin: 0; font-size: 1.8rem;">📦 Stretch Control</h2>
+        <div class="nav-links">
+            <a href="index.html">1. Conductor</a>
+            <a href="seguridad.html" class="active">2. Seguridad</a>
+            <a href="rampa.html">3. Rampa</a>
+            <a href="dashboard.html">Dashboard & Reportes</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="pushAlerta" class="alerta-push">
+            <span>⚠️ Activar alertas del sistema para nuevas solicitudes.</span>
+            <button class="btn-activar" onclick="activarNotificaciones()">Activar</button>
+        </div>
+
+        <h2>Área de Seguridad - Validaciones</h2>
+        
+        <div class="filtros">
+            <button class="tab-btn active" id="btnPendientes" onclick="cambiarFiltro('PENDIENTES')">⏳ Solicitudes Pendientes</button>
+            <button class="tab-btn" id="btnAprobados" onclick="cambiarFiltro('APROBADOS')">✅ Solicitudes Aprobadas</button>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead><tr><th>Fecha/Hora</th><th>Placa</th><th>Empresa</th><th>Consumo</th><th>Guía</th><th>Cant.</th><th>Estado</th><th>Acción</th></tr></thead>
+                <tbody id="tablaSeguridad"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let registros = JSON.parse(localStorage.getItem('stretchFilmData')) || [];
+        let filtroActual = 'PENDIENTES';
+
+        function formatDateTime(date) { return date.toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+
+        function verificarEstadoPermisos() {
+            if (!("Notification" in window)) { document.getElementById('pushAlerta').innerHTML = "Navegador sin soporte Push."; } 
+            else if (Notification.permission === "granted") { document.getElementById('pushAlerta').style.display = 'none'; }
+        }
+        window.activarNotificaciones = function() {
+            Notification.requestPermission().then(p => { if(p === "granted") { document.getElementById('pushAlerta').style.display = 'none'; new Notification("Alertas Activadas"); } });
+        }
+        verificarEstadoPermisos();
+
+        window.cambiarFiltro = function(filtro) {
+            filtroActual = filtro;
+            document.getElementById('btnPendientes').classList.toggle('active', filtro === 'PENDIENTES');
+            document.getElementById('btnAprobados').classList.toggle('active', filtro === 'APROBADOS');
+            renderTables();
+        }
+
+        function renderTables() {
+            const tb = document.getElementById('tablaSeguridad'); tb.innerHTML = '';
+            [...registros].reverse().forEach(reg => {
+                if(filtroActual === 'PENDIENTES' && reg.estado === "PENDIENTE VALIDACION") {
+                    tb.innerHTML += `<tr><td style="color:var(--text-muted);">${formatDateTime(new Date(reg.fechaHoraIngreso))}</td><td style="color:var(--white); font-weight:bold;">${reg.placa}</td><td>${reg.empresa}</td><td>${reg.tipoConsumo}</td><td>${reg.numeroGuia}</td><td style="color:var(--neon-blue); font-weight:bold; font-size:1.1rem;">${reg.cantidadStretch}</td><td><span class="badge">PENDIENTE</span></td><td><button class="btn-action" onclick="autorizar(${reg.id})">✅ AUTORIZAR</button></td></tr>`;
+                }
+                if(filtroActual === 'APROBADOS' && reg.estado !== "PENDIENTE VALIDACION") {
+                    tb.innerHTML += `<tr><td style="color:var(--text-muted);">${formatDateTime(new Date(reg.fechaHoraValidacion))}</td><td style="color:var(--white); font-weight:bold;">${reg.placa}</td><td>${reg.empresa}</td><td>${reg.tipoConsumo}</td><td>${reg.numeroGuia}</td><td style="color:var(--neon-blue); font-weight:bold; font-size:1.1rem;">${reg.cantidadStretch}</td><td><span class="badge aprobado">AUTORIZADO</span></td><td><span style="color:var(--text-muted);">Validado</span></td></tr>`;
+                }
+            });
+        }
+
+        window.autorizar = function(id) {
+            let reg = registros.find(r => r.id === id);
+            if(reg) { reg.estado = "PENDIENTE LIQUIDAR"; reg.fechaHoraValidacion = new Date().toISOString(); localStorage.setItem('stretchFilmData', JSON.stringify(registros)); renderTables(); }
+        }
+        
+        setInterval(() => {
+            let actualizar = false;
+            registros.forEach(reg => {
+                if(reg.estado === "PENDIENTE VALIDACION" && !reg.notificacionSeguridadEnviada) {
+                    if ("Notification" in window && Notification.permission === "granted") {
+                        new Notification("🚨 NUEVA SOLICITUD", { body: `Placa ${reg.placa} solicita ${reg.cantidadStretch} rollos.` });
+                    }
+                    reg.notificacionSeguridadEnviada = true; actualizar = true;
+                }
+            });
+            if(actualizar) { localStorage.setItem('stretchFilmData', JSON.stringify(registros)); renderTables(); }
+        }, 3000);
+
+        window.addEventListener('storage', () => { registros = JSON.parse(localStorage.getItem('stretchFilmData')) || []; renderTables(); });
+        renderTables();
+    </script>
+</body>
+</html>
